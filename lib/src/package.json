@@ -1,0 +1,14 @@
+{
+  "name": "food-for-thought-uploader",
+  "version": "1.0.0",
+  "description": "",
+  "main": "foodForThoughtUploader.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "csv-parse": "^4.15.4"
+  }
+}
