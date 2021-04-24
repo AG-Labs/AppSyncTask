@@ -5,10 +5,10 @@
 }
 
 type GenericFood {
-  FOOD_NAME: String!
-  GROUP: String
-  SUB_GROUP: String
-  SCIENTIFIC_NAME: String
+  food_name: String!
+  group: String
+  sub_group: String
+  scientific_name: String
 }
 
 type GenericFoodConnection {
@@ -23,7 +23,7 @@ type Mutation {
 }
 
 type Query {
-  getGenericFood(FOOD_NAME: String!): GenericFood
+  getGenericFood(food_name: String!): GenericFood
   listGenericFoods(
     filter: TableGenericFoodFilterInput
     limit: Int
@@ -33,34 +33,34 @@ type Query {
 
 type Subscription {
   onCreateGenericFood(
-    FOOD_NAME: String
-    GROUP: String
-    SUB_GROUP: String
-    SCIENTIFIC_NAME: String
+    food_name: String
+    group: String
+    sub_group: String
+    scientific_name: String
   ): GenericFood @aws_subscribe(mutations: ["createGenericFood"])
   onDeleteGenericFood(
-    FOOD_NAME: String
-    GROUP: String
-    SUB_GROUP: String
-    SCIENTIFIC_NAME: String
+    food_name: String
+    group: String
+    sub_group: String
+    scientific_name: String
   ): GenericFood @aws_subscribe(mutations: ["deleteGenericFood"])
   onUpdateGenericFood(
-    FOOD_NAME: String
-    GROUP: String
-    SUB_GROUP: String
-    SCIENTIFIC_NAME: String
+    food_name: String
+    group: String
+    sub_group: String
+    scientific_name: String
   ): GenericFood @aws_subscribe(mutations: ["updateGenericFood"])
 }
 
 input CreateGenericFoodInput {
-  FOOD_NAME: String!
-  GROUP: String
-  SUB_GROUP: String
-  SCIENTIFIC_NAME: String
+  food_name: String!
+  group: String
+  sub_group: String
+  scientific_name: String
 }
 
 input DeleteGenericFoodInput {
-  FOOD_NAME: String!
+  food_name: String!
 }
 
 input TableBooleanFilterInput {
@@ -81,10 +81,10 @@ input TableFloatFilterInput {
 }
 
 input TableGenericFoodFilterInput {
-  FOOD_NAME: TableStringFilterInput
-  GROUP: TableStringFilterInput
-  SUB_GROUP: TableStringFilterInput
-  SCIENTIFIC_NAME: TableStringFilterInput
+  food_name: TableStringFilterInput
+  group: TableStringFilterInput
+  sub_group: TableStringFilterInput
+  scientific_name: TableStringFilterInput
 }
 
 input TableIDFilterInput {
@@ -126,8 +126,8 @@ input TableStringFilterInput {
 }
 
 input UpdateGenericFoodInput {
-  FOOD_NAME: String!
-  GROUP: String
-  SUB_GROUP: String
-  SCIENTIFIC_NAME: String
+  food_name: String!
+  group: String
+  sub_group: String
+  scientific_name: String
 }

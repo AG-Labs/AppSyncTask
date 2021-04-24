@@ -45,7 +45,7 @@ export class FoodForThoughtStack extends Stack {
     });
 
     let foodDatabase = new Table(this, "food-table", {
-      partitionKey: { name: "FOOD_NAME", type: AttributeType.STRING },
+      partitionKey: { name: "food_name", type: AttributeType.STRING },
       billingMode: BillingMode.PAY_PER_REQUEST,
       removalPolicy: RemovalPolicy.DESTROY,
     });
@@ -98,8 +98,8 @@ export class FoodForThoughtStack extends Stack {
       fieldName: "getGenericFood",
       dataSource: foodAPISource,
       requestMappingTemplate: MappingTemplate.dynamoDbGetItem(
-        "FOOD_NAME",
-        "FOOD_NAME",
+        "food_name",
+        "food_name",
       ),
       responseMappingTemplate: MappingTemplate.dynamoDbResultItem(),
     });
@@ -118,12 +118,11 @@ export class FoodForThoughtStack extends Stack {
       fieldName: "createGenericFood",
       dataSource: foodAPISource,
       requestMappingTemplate: MappingTemplate.dynamoDbPutItem(
-        new PrimaryKey(new Assign("FOOD_NAME", "FOOD_NAME")),
+        new PrimaryKey(new Assign("food_name", "food_name")),
         new AttributeValues("container", [
-          new Assign("FOOD_NAME", "FOOD_NAME"),
-          new Assign("SCIENTIFIC_NAME", "SCIENTIFIC_NAME"),
-          new Assign("GROUP", "GROUP"),
-          new Assign("SUB_GROUP", "SUB_GROUP"),
+          new Assign("scientific_name", "scientific_name"),
+          new Assign("group", "group"),
+          new Assign("sub_group", "sub_group"),
         ]),
       ),
       responseMappingTemplate: MappingTemplate.dynamoDbResultItem(),
@@ -135,13 +134,16 @@ export class FoodForThoughtStack extends Stack {
 {
     "version" : "2017-02-28",
     "operation" : "PutItem",
-    "key": {
-        "FOOD_NAME" : $util.dynamodb.toDynamoDBJson($ctx.args.FOOD_NAME) 
+    "key" : {
+        "food_name" : $util.dynamodb.toDynamoDBJson($context.arguments.food_name)
     },
     "attributeValues" : {
-        "GROUP" : $util.dynamodb.toDynamoDBJson($ctx.args.GROUP) ,
-        "SUB_GROUP" : $util.dynamodb.toDynamoDBJson($ctx.args.SUB_GROUP) ,
-        "SCIENTIFIC_NAME" : $util.dynamodb.toDynamoDBJson($ctx.args.SCIENTIFIC_NAME) , 
-    }
+        "group" : $util.dynamodb.toDynamoDBJson($context.arguments.group),
+        "sub_group" : $util.dynamodb.toDynamoDBJson($context.arguments.sub_group),
+        "scientific_name" : $util.dynamodb.toDynamoDBJson($context.arguments.scientific_name),
+	} 
 }
+
+
+
 */
