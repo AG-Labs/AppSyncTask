@@ -103,5 +103,45 @@ export class FoodForThoughtStack extends Stack {
       ),
       responseMappingTemplate: MappingTemplate.dynamoDbResultItem(),
     });
+
+    // let listGenericResolver = new Resolver(this, "list-generic-resolver", {
+    //   api: foodAPI,
+    //   typeName: "Query",
+    //   fieldName: "listGenericFoods",
+    //   dataSource: foodAPISource,
+    //   requestMappingTemplate: MappingTemplate.dynamoDbScanTable(),
+    //   responseMappingTemplate: MappingTemplate.dynamoDbResultList(),
+    // });
+    let createGenericResolver = new Resolver(this, "create-generic-resolver", {
+      api: foodAPI,
+      typeName: "Mutation",
+      fieldName: "createGenericFood",
+      dataSource: foodAPISource,
+      requestMappingTemplate: MappingTemplate.dynamoDbPutItem(
+        new PrimaryKey(new Assign("FOOD_NAME", "FOOD_NAME")),
+        new AttributeValues("container", [
+          new Assign("FOOD_NAME", "FOOD_NAME"),
+          new Assign("SCIENTIFIC_NAME", "SCIENTIFIC_NAME"),
+          new Assign("GROUP", "GROUP"),
+          new Assign("SUB_GROUP", "SUB_GROUP"),
+        ]),
+      ),
+      responseMappingTemplate: MappingTemplate.dynamoDbResultItem(),
+    });
   }
 }
+
+/*
+{
+    "version" : "2017-02-28",
+    "operation" : "PutItem",
+    "key": {
+        "FOOD_NAME" : $util.dynamodb.toDynamoDBJson($ctx.args.FOOD_NAME) 
+    },
+    "attributeValues" : {
+        "GROUP" : $util.dynamodb.toDynamoDBJson($ctx.args.GROUP) ,
+        "SUB_GROUP" : $util.dynamodb.toDynamoDBJson($ctx.args.SUB_GROUP) ,
+        "SCIENTIFIC_NAME" : $util.dynamodb.toDynamoDBJson($ctx.args.SCIENTIFIC_NAME) , 
+    }
+}
+*/
