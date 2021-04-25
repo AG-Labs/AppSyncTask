@@ -1,133 +1,15 @@
-﻿schema {
-  query: Query
-  mutation: Mutation
-  subscription: Subscription
-}
-
-type GenericFood {
+﻿type GenericFood {
   food_name: String!
   group: String
   sub_group: String
   scientific_name: String
-}
-
-type GenericFoodConnection {
-  items: [GenericFood]
-  nextToken: String
-}
-
-type Mutation {
-  createGenericFood(input: CreateGenericFoodInput!): GenericFood
-  deleteGenericFood(input: DeleteGenericFoodInput!): GenericFood
-  updateGenericFood(input: UpdateGenericFoodInput!): GenericFood
 }
 
 type Query {
   getGenericFood(food_name: String!): GenericFood
-  listGenericFoods(
-    filter: TableGenericFoodFilterInput
-    limit: Int
-    nextToken: String
-  ): GenericFoodConnection
+  listGenericFoods: [GenericFood]
 }
 
-type Subscription {
-  onCreateGenericFood(
-    food_name: String
-    group: String
-    sub_group: String
-    scientific_name: String
-  ): GenericFood @aws_subscribe(mutations: ["createGenericFood"])
-  onDeleteGenericFood(
-    food_name: String
-    group: String
-    sub_group: String
-    scientific_name: String
-  ): GenericFood @aws_subscribe(mutations: ["deleteGenericFood"])
-  onUpdateGenericFood(
-    food_name: String
-    group: String
-    sub_group: String
-    scientific_name: String
-  ): GenericFood @aws_subscribe(mutations: ["updateGenericFood"])
-}
-
-input CreateGenericFoodInput {
-  food_name: String!
-  group: String
-  sub_group: String
-  scientific_name: String
-}
-
-input DeleteGenericFoodInput {
-  food_name: String!
-}
-
-input TableBooleanFilterInput {
-  eq: Boolean
-  ne: Boolean
-}
-
-input TableFloatFilterInput {
-  between: [Float]
-  contains: Float
-  eq: Float
-  ge: Float
-  gt: Float
-  le: Float
-  lt: Float
-  ne: Float
-  notContains: Float
-}
-
-input TableGenericFoodFilterInput {
-  food_name: TableStringFilterInput
-  group: TableStringFilterInput
-  sub_group: TableStringFilterInput
-  scientific_name: TableStringFilterInput
-}
-
-input TableIDFilterInput {
-  beginsWith: ID
-  between: [ID]
-  contains: ID
-  eq: ID
-  ge: ID
-  gt: ID
-  le: ID
-  lt: ID
-  ne: ID
-  notContains: ID
-}
-
-input TableIntFilterInput {
-  between: [Int]
-  contains: Int
-  eq: Int
-  ge: Int
-  gt: Int
-  le: Int
-  lt: Int
-  ne: Int
-  notContains: Int
-}
-
-input TableStringFilterInput {
-  beginsWith: String
-  between: [String]
-  contains: String
-  eq: String
-  ge: String
-  gt: String
-  le: String
-  lt: String
-  ne: String
-  notContains: String
-}
-
-input UpdateGenericFoodInput {
-  food_name: String!
-  group: String
-  sub_group: String
-  scientific_name: String
+schema {
+  query: Query
 }
