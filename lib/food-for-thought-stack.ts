@@ -12,9 +12,17 @@ import {
   BucketEncryption,
   EventType,
 } from "@aws-cdk/aws-s3";
-import { Function, Runtime, Code } from "@aws-cdk/aws-lambda";
-import { S3EventSource } from "@aws-cdk/aws-lambda-event-sources";
-import { Table, AttributeType, BillingMode } from "@aws-cdk/aws-dynamodb";
+import { Function, Runtime, Code, StartingPosition } from "@aws-cdk/aws-lambda";
+import {
+  S3EventSource,
+  DynamoEventSource,
+} from "@aws-cdk/aws-lambda-event-sources";
+import {
+  Table,
+  AttributeType,
+  BillingMode,
+  StreamViewType,
+} from "@aws-cdk/aws-dynamodb";
 import {
   GraphqlApi,
   Schema,
@@ -64,6 +72,7 @@ export class FoodForThoughtStack extends Stack {
       billingMode: BillingMode.PAY_PER_REQUEST,
       removalPolicy:
         props.stage === "dev" ? RemovalPolicy.DESTROY : RemovalPolicy.RETAIN,
+      stream: StreamViewType.NEW_IMAGE,
     });
 
     let uploadRole = new Role(this, "upload-role", {
@@ -85,7 +94,7 @@ export class FoodForThoughtStack extends Stack {
     let dynamoUpload = new Function(this, `upload-function`, {
       functionName: `${id}-upload-function`,
       runtime: Runtime.NODEJS_14_X,
-      code: Code.fromAsset("./lib/src"),
+      code: Code.fromAsset("./lib/src/uploader"),
       handler: "foodForThoughtUploader.handler",
       description: "A function that takes our data and loads it into dynamodb",
       events: [
@@ -169,6 +178,46 @@ export class FoodForThoughtStack extends Stack {
         new AttributeValues("$ctx.args.input"),
       ),
       responseMappingTemplate: MappingTemplate.dynamoDbResultItem(),
+    });
+
+    let notifierRole = new Role(this, "notifier-role", {
+      assumedBy: new ServicePrincipal("lambda.amazonaws.com"),
+      managedPolicies: [
+        new ManagedPolicy(this, "notifier-policy", {
+          statements: [
+            new PolicyStatement({
+              sid: "allowServices",
+              effect: Effect.ALLOW,
+              resources: [`*`],
+              actions: [
+                "kms:*",
+                "s3:*",
+                "lambda:*",
+                "logs:*",
+                "dynamodb:*",
+                "appsync:*",
+              ],
+            }),
+          ],
+        }),
+      ],
+    });
+
+    let notifierFunc = new Function(this, "notifier-function", {
+      functionName: `${id}-notifier-function`,
+      runtime: Runtime.NODEJS_14_X,
+      code: Code.fromAsset("./lib/src/notifier"),
+      handler: "foodForThoughtNotifier.handler",
+      description:
+        "A function called by AppSync that logs a change so it can be seen in cloudwatch",
+      role: notifierRole,
+      timeout: Duration.minutes(5),
+      events: [
+        new DynamoEventSource(foodDatabase, {
+          startingPosition: StartingPosition.LATEST,
+          retryAttempts: 2,
+        }),
+      ],
     });
 
     new CfnOutput(this, "cf-output", {

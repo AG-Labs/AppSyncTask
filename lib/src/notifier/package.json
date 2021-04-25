@@ -1,0 +1,12 @@
+{
+  "name": "food-for-thought-notifier",
+  "version": "1.0.0",
+  "description": "",
+  "main": "foodForThoughtNotifier.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {}
+}
