@@ -104,61 +104,13 @@ export class FoodForThoughtStack extends Stack {
       responseMappingTemplate: MappingTemplate.dynamoDbResultItem(),
     });
 
-    // let listGenericResolver = new Resolver(this, "list-generic-resolver", {
-    //   api: foodAPI,
-    //   typeName: "Query",
-    //   fieldName: "listGenericFoods",
-    //   dataSource: foodAPISource,
-    //   requestMappingTemplate: MappingTemplate.dynamoDbScanTable(),
-    //   responseMappingTemplate: MappingTemplate.dynamoDbResultList(),
-    // });
-    let createGenericResolver = new Resolver(this, "create-generic-resolver", {
+    let listGenericResolver = new Resolver(this, "list-generic-resolver", {
       api: foodAPI,
-      typeName: "Mutation",
-      fieldName: "createGenericFood",
+      typeName: "Query",
+      fieldName: "listGenericFoods",
       dataSource: foodAPISource,
-      requestMappingTemplate: MappingTemplate.dynamoDbPutItem(
-        new PrimaryKey(new Assign("food_name", "food_name")),
-        new AttributeValues("container", [
-          new Assign("scientific_name", "scientific_name"),
-          new Assign("group", "group"),
-          new Assign("sub_group", "sub_group"),
-        ]),
-      ),
-      responseMappingTemplate: MappingTemplate.dynamoDbResultItem(),
+      requestMappingTemplate: MappingTemplate.dynamoDbScanTable(),
+      responseMappingTemplate: MappingTemplate.dynamoDbResultList(),
     });
   }
 }
-
-/*
-{
-    "version" : "2017-02-28",
-    "operation" : "PutItem",
-    "key" : {
-        "food_name" : $util.dynamodb.toDynamoDBJson($context.arguments.food_name)
-    },
-    "attributeValues" : {
-        "group" : $util.dynamodb.toDynamoDBJson($context.arguments.group),
-        "sub_group" : $util.dynamodb.toDynamoDBJson($context.arguments.sub_group),
-        "scientific_name" : $util.dynamodb.toDynamoDBJson($context.arguments.scientific_name),
-	} 
-}
-
-
-correct resolver for list item but does not pass through generic food connetction
-
-{
-    "version" : "2017-02-28",
-    "operation" : "Scan",
-    "filter" : {
-        "expression" : "begins_with(food_name, :food_name)",
-        "expressionValues" : {
-            ":food_name" : $util.dynamodb.toDynamoDBJson($context.arguments.filter.food_name.beginsWith)
-        },
-    },
-    ## Add 'limit' and 'nextToken' arguments to this field in your schema to implement pagination. **
-    "limit": $util.defaultIfNull(${ctx.args.limit}, 20),
-    "nextToken": $util.toJson($util.defaultIfNullOrBlank($ctx.args.nextToken, null))
-}
-$util.toJson($context.result.items)
-*/
