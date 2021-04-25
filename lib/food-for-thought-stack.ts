@@ -145,5 +145,20 @@ export class FoodForThoughtStack extends Stack {
 }
 
 
+correct resolver for list item but does not pass through generic food connetction
 
+{
+    "version" : "2017-02-28",
+    "operation" : "Scan",
+    "filter" : {
+        "expression" : "begins_with(food_name, :food_name)",
+        "expressionValues" : {
+            ":food_name" : $util.dynamodb.toDynamoDBJson($context.arguments.filter.food_name.beginsWith)
+        },
+    },
+    ## Add 'limit' and 'nextToken' arguments to this field in your schema to implement pagination. **
+    "limit": $util.defaultIfNull(${ctx.args.limit}, 20),
+    "nextToken": $util.toJson($util.defaultIfNullOrBlank($ctx.args.nextToken, null))
+}
+$util.toJson($context.result.items)
 */
