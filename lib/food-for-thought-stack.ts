@@ -1,4 +1,10 @@
-import { RemovalPolicy, Construct, Stack, StackProps } from "@aws-cdk/core";
+import {
+  RemovalPolicy,
+  Construct,
+  Stack,
+  StackProps,
+  Duration,
+} from "@aws-cdk/core";
 import {
   Bucket,
   BucketAccessControl,
@@ -17,6 +23,8 @@ import {
   PrimaryKey,
   Assign,
   AttributeValues,
+  FieldLogLevel,
+  AuthorizationType,
 } from "@aws-cdk/aws-appsync";
 import {
   Effect,
@@ -26,8 +34,12 @@ import {
   ServicePrincipal,
 } from "@aws-cdk/aws-iam";
 
+export interface IFoodForThoughtStack extends StackProps {
+  stage: string;
+}
+
 export class FoodForThoughtStack extends Stack {
-  constructor(scope: Construct, id: string, props?: StackProps) {
+  constructor(scope: Construct, id: string, props: IFoodForThoughtStack) {
     super(scope, id, props);
 
     let landingBucket = new Bucket(this, "landing-bucket", {
@@ -40,14 +52,16 @@ export class FoodForThoughtStack extends Stack {
       },
       accessControl: BucketAccessControl.PRIVATE,
       encryption: BucketEncryption.KMS_MANAGED,
-      removalPolicy: RemovalPolicy.DESTROY,
-      autoDeleteObjects: true,
+      removalPolicy:
+        props.stage === "dev" ? RemovalPolicy.DESTROY : RemovalPolicy.RETAIN,
+      autoDeleteObjects: props.stage === "dev" ? true : false,
     });
 
     let foodDatabase = new Table(this, "food-table", {
       partitionKey: { name: "food_name", type: AttributeType.STRING },
       billingMode: BillingMode.PAY_PER_REQUEST,
-      removalPolicy: RemovalPolicy.DESTROY,
+      removalPolicy:
+        props.stage === "dev" ? RemovalPolicy.DESTROY : RemovalPolicy.RETAIN,
     });
 
     let uploadRole = new Role(this, "upload-role", {
@@ -58,7 +72,7 @@ export class FoodForThoughtStack extends Stack {
             new PolicyStatement({
               sid: "allowServices",
               effect: Effect.ALLOW,
-              resources: ["*"],
+              resources: [`*`],
               actions: ["kms:*", "s3:*", "lambda:*", "logs:*", "dynamodb:*"],
             }),
           ],
@@ -79,12 +93,22 @@ export class FoodForThoughtStack extends Stack {
       ],
       environment: { targetDyanamo: foodDatabase.tableName },
       role: uploadRole,
+      timeout: Duration.minutes(5),
     });
 
     let foodAPI = new GraphqlApi(this, "food-graph-api", {
       name: `${id}-graphql-api`,
       schema: Schema.fromAsset("./lib/schema.graphql"),
+      logConfig: {
+        fieldLogLevel: FieldLogLevel.ALL,
+      },
+      authorizationConfig: {
+        defaultAuthorization: {
+          authorizationType: AuthorizationType.API_KEY,
+        },
+      },
     });
+
     let foodAPISource = new DynamoDbDataSource(this, "food-graph-source", {
       api: foodAPI,
       table: foodDatabase,

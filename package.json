@@ -10,6 +10,7 @@
     "test": "jest",
     "cdk": "cdk",
     "deploy": "cdk deploy FoodForThought --require-approval never",
+    "list": "cdk ls",
     "check": "prettier --check \"./**/*.{js, jsx, json, yml}\" --config ./.prettierrc.json --ignore-path ./.prettierignore",
     "pretty": "prettier --write \"./**/*.{js, jsx, json, yml}\" --config ./.prettierrc.json --ignore-path ./.prettierignore",
     "postinstall": "cd lib/src && npm install"
