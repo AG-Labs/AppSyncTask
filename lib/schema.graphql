@@ -5,6 +5,13 @@
   scientific_name: String
 }
 
+input inputGenericFood @aws_cognito_user_pools @aws_api_key {
+  food_name: String!
+  group: String
+  sub_group: String
+  scientific_name: String
+}
+
 type Query {
   getGenericFood(food_name: String!): GenericFood
     @aws_cognito_user_pools
@@ -12,6 +19,13 @@ type Query {
   listGenericFoods: [GenericFood] @aws_cognito_user_pools @aws_api_key
 }
 
+type Mutation {
+  createGenericFood(input: inputGenericFood!): GenericFood
+    @aws_cognito_user_pools
+    @aws_api_key
+}
+
 schema {
   query: Query
+  mutation: Mutation
 }

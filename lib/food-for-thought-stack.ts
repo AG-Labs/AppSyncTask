@@ -159,6 +159,18 @@ export class FoodForThoughtStack extends Stack {
       responseMappingTemplate: MappingTemplate.dynamoDbResultList(),
     });
 
+    let createGenericReolver = new Resolver(this, "create-generic-resolver", {
+      api: foodAPI,
+      typeName: "Mutation",
+      fieldName: "createGenericFood",
+      dataSource: foodAPISource,
+      requestMappingTemplate: MappingTemplate.dynamoDbPutItem(
+        new PrimaryKey(new Assign("food_name", "$ctx.args.input.food_name")),
+        new AttributeValues("$ctx.args.input"),
+      ),
+      responseMappingTemplate: MappingTemplate.dynamoDbResultItem(),
+    });
+
     new CfnOutput(this, "cf-output", {
       value: foodAPI.graphqlUrl,
     });
