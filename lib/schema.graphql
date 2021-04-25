@@ -1,4 +1,4 @@
-﻿type GenericFood {
+﻿type GenericFood @aws_cognito_user_pools @aws_api_key {
   food_name: String!
   group: String
   sub_group: String
@@ -7,7 +7,9 @@
 
 type Query {
   getGenericFood(food_name: String!): GenericFood
-  listGenericFoods: [GenericFood]
+    @aws_cognito_user_pools
+    @aws_api_key
+  listGenericFoods: [GenericFood] @aws_cognito_user_pools @aws_api_key
 }
 
 schema {
