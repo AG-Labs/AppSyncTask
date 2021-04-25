@@ -4,6 +4,7 @@ import {
   Stack,
   StackProps,
   Duration,
+  CfnOutput,
 } from "@aws-cdk/core";
 import {
   Bucket,
@@ -33,6 +34,7 @@ import {
   Role,
   ServicePrincipal,
 } from "@aws-cdk/aws-iam";
+import { UserPool, UserPoolClient } from "@aws-cdk/aws-cognito";
 
 export interface IFoodForThoughtStack extends StackProps {
   stage: string;
@@ -96,6 +98,18 @@ export class FoodForThoughtStack extends Stack {
       timeout: Duration.minutes(5),
     });
 
+    let APIUserPool = new UserPool(this, "food-user-pool", {
+      removalPolicy:
+        props.stage === "dev" ? RemovalPolicy.DESTROY : RemovalPolicy.RETAIN,
+      userPoolName: `${id}-user-pool`,
+    });
+
+    let userPoolClient = new UserPoolClient(this, "food-user-pool-client", {
+      userPool: APIUserPool,
+      userPoolClientName: `${id}-client`,
+      authFlows: { userPassword: true, userSrp: true },
+    });
+
     let foodAPI = new GraphqlApi(this, "food-graph-api", {
       name: `${id}-graphql-api`,
       schema: Schema.fromAsset("./lib/schema.graphql"),
@@ -106,6 +120,14 @@ export class FoodForThoughtStack extends Stack {
         defaultAuthorization: {
           authorizationType: AuthorizationType.API_KEY,
         },
+        additionalAuthorizationModes: [
+          {
+            authorizationType: AuthorizationType.USER_POOL,
+            userPoolConfig: {
+              userPool: APIUserPool,
+            },
+          },
+        ],
       },
     });
 
@@ -135,6 +157,10 @@ export class FoodForThoughtStack extends Stack {
       dataSource: foodAPISource,
       requestMappingTemplate: MappingTemplate.dynamoDbScanTable(),
       responseMappingTemplate: MappingTemplate.dynamoDbResultList(),
+    });
+
+    new CfnOutput(this, "cf-output", {
+      value: foodAPI.graphqlUrl,
     });
   }
 }
