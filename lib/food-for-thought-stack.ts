@@ -51,6 +51,15 @@ export interface IFoodForThoughtStack extends StackProps {
 export class FoodForThoughtStack extends Stack {
   constructor(scope: Construct, id: string, props: IFoodForThoughtStack) {
     super(scope, id, props);
+    /** -- Landing area --
+     * This section of the code contains the resources required to deal with new data
+     * translation of it and the loading of it into a suitable data store.
+     *
+     * Resources used:
+     * Bucket - Can be used to dump data to be uploaded to the table
+     * DynamoDB table - For storing of the processed data where it can be interrogated
+     * A Node Lambda and is associated Role - Reads csv files placed in the landing bucket and performs minor processing before uploaded to the database in batches
+     */
 
     let landingBucket = new Bucket(this, "landing-bucket", {
       bucketName: `${id}-bucket`.toLowerCase(),
@@ -107,6 +116,21 @@ export class FoodForThoughtStack extends Stack {
       timeout: Duration.minutes(5),
     });
 
+    /** -- Processing --
+     * This section of the code contains the resources required to interigate and modify the data store
+     * the resulting url for the api created will be provided as an output of the template, this will
+     * be visible in the cloudformation console or in the users's terminal when deploying from the cdk
+     * commands.
+     *
+     * The resources in this section comprise:
+     * Cognito User Pool and client - allowing for access to the api from a user without AWS console access
+     * AppSync GraphQL API - Defines the schema which powers the api and resolvers to fetch and return data to the user
+     * AppSync Data source - Connected to the singular DynamoDB Table defined above but could be expanded to more
+     * AppSync Resolvers - Link the schema entries to the relevant data source and map values if needed
+     * A Lambda and associated Role - to log any changes made to the DynamoDB table which can be effected through this api
+     */
+
+    // Create user pool to allows for non api access to the API
     let APIUserPool = new UserPool(this, "food-user-pool", {
       removalPolicy:
         props.stage === "dev" ? RemovalPolicy.DESTROY : RemovalPolicy.RETAIN,
@@ -119,6 +143,7 @@ export class FoodForThoughtStack extends Stack {
       authFlows: { userPassword: true, userSrp: true },
     });
 
+    // Create the main API service, specify log configuration and connect to user pool for alternate authorisation option
     let foodAPI = new GraphqlApi(this, "food-graph-api", {
       name: `${id}-graphql-api`,
       schema: Schema.fromAsset("./lib/schema.graphql"),
@@ -140,6 +165,8 @@ export class FoodForThoughtStack extends Stack {
       },
     });
 
+    // Create the dynamo data source that can be specified in the resolvers
+    // Then create resolvers for a simple get, list and create api call
     let foodAPISource = new DynamoDbDataSource(this, "food-graph-source", {
       api: foodAPI,
       table: foodDatabase,
@@ -180,6 +207,8 @@ export class FoodForThoughtStack extends Stack {
       responseMappingTemplate: MappingTemplate.dynamoDbResultItem(),
     });
 
+    // Create a lambda that can log when a change is made to the dynamodb table and link it to our table using
+    // an event source pointed to foodDatabase
     let notifierRole = new Role(this, "notifier-role", {
       assumedBy: new ServicePrincipal("lambda.amazonaws.com"),
       managedPolicies: [
@@ -220,6 +249,7 @@ export class FoodForThoughtStack extends Stack {
       ],
     });
 
+    //Proce the API url as an output to this template
     new CfnOutput(this, "cf-output", {
       value: foodAPI.graphqlUrl,
     });
